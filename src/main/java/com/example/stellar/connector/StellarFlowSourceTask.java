@@ -1,4 +1,4 @@
-package com.example.stellar;
+package com.example.stellar.connector;
 
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -8,10 +8,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.SubmissionPublisher;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.SubmissionPublisher;
 
 public class StellarFlowSourceTask extends SourceTask {
     private SubmissionPublisher<SourceRecord> publisher;
@@ -21,7 +22,6 @@ public class StellarFlowSourceTask extends SourceTask {
     private String uri;
     private String txnTopic;
     private HttpClient httpClient;
-    private CompletableFuture<Void> sseFuture;
 
     @Override
     public String version() {
@@ -46,6 +46,7 @@ public class StellarFlowSourceTask extends SourceTask {
         var sourceOffset = context.offsetStorageReader().offset(sourcePartition);
         var cursor = sourceOffset.getOrDefault("position", "");
         String url = String.format("%s?cursor=%s", uri, cursor);
+        System.out.printf("Connected to : %s%n", url);
 
         // Create HttpRequest with SSE event stream
         HttpRequest request = HttpRequest.newBuilder()
@@ -56,16 +57,11 @@ public class StellarFlowSourceTask extends SourceTask {
                 .build();
 
         // fill up buffer, cleared on poll
-        var responseBodyHandler = HttpResponse.BodyHandlers.fromLineSubscriber(subscriber);
-        sseFuture = httpClient
-                .sendAsync(request, responseBodyHandler)
+        httpClient
+                .sendAsync(request, HttpResponse.BodyHandlers.fromLineSubscriber(subscriber))
                 .thenAccept(response -> System.out.println("Response status code: " + response.statusCode()));
-
-        // Keep the main thread alive
-        sseFuture.join();
     }
 
-    // TODO add some metrics on the buffer size etc
     @Override
     public List<SourceRecord> poll() {
         // Check the status of the subscriber
@@ -73,6 +69,7 @@ public class StellarFlowSourceTask extends SourceTask {
             // Handle completion
             return null;
         }
+        // TODO add some metrics on the buffer size, httpClient, etc
         List<SourceRecord> records = new ArrayList<>(buffer);
         buffer.clear();
         return records;

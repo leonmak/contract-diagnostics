@@ -1,4 +1,4 @@
-package com.example.stellar;
+package com.example.stellar.connector;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

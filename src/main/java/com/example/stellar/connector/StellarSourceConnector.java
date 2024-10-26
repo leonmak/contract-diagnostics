@@ -1,4 +1,4 @@
-package com.example.stellar;
+package com.example.stellar.connector;
 
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
@@ -9,6 +9,11 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * StellarSourceConnector is a Kafka Connect connector that reads transactions from the Stellar network
+ * and publishes them to a Kafka topic for analysis.
+ **/
+// TODO separate out into another maven module
 public class StellarSourceConnector extends SourceConnector {
   private Map<String, String> config;
 
