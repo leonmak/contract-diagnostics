@@ -15,7 +15,7 @@ import java.util.concurrent.SubmissionPublisher;
 import java.util.stream.Collectors;
 
 /**
- * StellarFlowSourceTask is a Kafka Connect SourceTask that subscribes to the horizon API transactions.
+ * SourceTask that subscribes to the horizon API transactions.
  * Contains the HTTP client initiating the streaming request, manages an internal buffer which is transferred on poll.
  */
 public class StellarSourceTask extends SourceTask {
@@ -25,11 +25,10 @@ public class StellarSourceTask extends SourceTask {
 
     private String txnTopic;
     private HttpClient httpClient;
-    private List<String> accountIds;
 
     @Override
     public String version() {
-        return "1.0";
+        return "1.1";
     }
 
     @Override
@@ -41,7 +40,7 @@ public class StellarSourceTask extends SourceTask {
         // Connect to your data source here
         // For example, establish an SSE connection
         String urlFormat = config.get("stellar.horizon.url-format");
-        this.accountIds = Arrays.stream(config.get("stellar.account-ids").split(","))
+        List<String> accountIds = Arrays.stream(config.get("stellar.account-ids").split(","))
                 .collect(Collectors.toList());
 
         this.txnTopic = config.get("stellar.transactions.topic");
@@ -59,7 +58,7 @@ public class StellarSourceTask extends SourceTask {
             Map<String, String> sourcePartition = Map.of("topic", txnTopic, "account_id", accountId);
 
             var sourceOffset = context.offsetStorageReader().offset(sourcePartition);
-            var cursor = sourceOffset.getOrDefault("paging_token", "");
+            var cursor = sourceOffset == null ? "" : sourceOffset.getOrDefault("paging_token", "");
             String baseUrl = String.format(urlFormat, accountId);
             String urlWithParam = String.format("%s?order=desc&cursor=%s", baseUrl, cursor);
             System.out.printf("Connecting to : %s%n", urlWithParam);

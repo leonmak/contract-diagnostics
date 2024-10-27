@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * StellarSourceConnector is a Kafka Connect connector configures the SourceTask
- * that reads transactions from the Stellar network and publishes them to a Kafka topic for analysis.
- **/
+ * SourceConnector that configures the SourceTask
+ */
 // TODO separate out into another maven module
 public class StellarSourceConnector extends SourceConnector {
   private Map<String, String> config;

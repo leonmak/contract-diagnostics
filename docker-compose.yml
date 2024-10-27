@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      STELLAR_NETWORK: testnet
+      NETWORK: local
 
 #  app:
 #    build:

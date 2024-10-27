@@ -43,7 +43,8 @@ public class StellarTxnSubscriber implements Flow.Subscriber<String> {
             Map<String, Object> eventData = OBJECT_MAPPER.readValue(event, mapTypeReference);
             // Create source partition and offset
             Map<String, String> sourcePartition = Map.of("topic", txnTopic, "account_id", accountId);
-            Map<String, Object> sourceOffset = Map.of("paging_token", eventData.get("pagingToken"));
+            String pagingToken = (String) eventData.get("pagingToken");
+            Map<String, Object> sourceOffset = Map.of("paging_token", pagingToken);
 
             // TODO: do some kind of conversion, store as string for now
             SourceRecord sourceRecord = new SourceRecord(
@@ -52,9 +53,9 @@ public class StellarTxnSubscriber implements Flow.Subscriber<String> {
                     txnTopic,
                     null, // partition will be determined by Kafka
                     Schema.STRING_SCHEMA,
-                    event,
+                    "acct="+accountId+":pg="+pagingToken,
                     Schema.STRING_SCHEMA,
-                    OBJECT_MAPPER.writeValueAsString(eventData),
+                    event,
                     System.currentTimeMillis()
             );
 
