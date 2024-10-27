@@ -13,16 +13,17 @@ import java.util.concurrent.Flow;
  * Handler for new transaction events from the horizon streaming API,
  * Convert and store the new SourceRecords in an intermediate buffer.
  **/
-public class TxnSubscriber implements Flow.Subscriber<String> {
+public class StellarTxnSubscriber implements Flow.Subscriber<String> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final List<SourceRecord> buffer;
+    private final String accountId;
     private final String txnTopic;
 
-    // set when subscribe
     private Flow.Subscription subscription;
     private boolean isComplete = false;
 
-    public TxnSubscriber(String txnTopic, List<SourceRecord> buffer) {
+    public StellarTxnSubscriber(String accountId, String txnTopic, List<SourceRecord> buffer) {
+        this.accountId = accountId;
         this.txnTopic = txnTopic;
         this.buffer = buffer;
     }
@@ -40,10 +41,9 @@ public class TxnSubscriber implements Flow.Subscriber<String> {
             TypeReference<Map<String,Object>> mapTypeReference = new TypeReference<>() {
             };
             Map<String, Object> eventData = OBJECT_MAPPER.readValue(event, mapTypeReference);
-            Long pagingToken = Long.parseLong((String) eventData.get("pagingToken"));
             // Create source partition and offset
-            Map<String, String> sourcePartition = Map.of("topic", txnTopic);
-            Map<String, Long> sourceOffset = Map.of("position", pagingToken);
+            Map<String, String> sourcePartition = Map.of("topic", txnTopic, "account_id", accountId);
+            Map<String, Object> sourceOffset = Map.of("paging_token", eventData.get("pagingToken"));
 
             // TODO: do some kind of conversion, store as string for now
             SourceRecord sourceRecord = new SourceRecord(

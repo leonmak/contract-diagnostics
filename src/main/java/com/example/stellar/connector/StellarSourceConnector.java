@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * StellarSourceConnector is a Kafka Connect connector that reads transactions from the Stellar network
- * and publishes them to a Kafka topic for analysis.
+ * StellarSourceConnector is a Kafka Connect connector configures the SourceTask
+ * that reads transactions from the Stellar network and publishes them to a Kafka topic for analysis.
  **/
 // TODO separate out into another maven module
 public class StellarSourceConnector extends SourceConnector {
@@ -19,7 +19,7 @@ public class StellarSourceConnector extends SourceConnector {
 
   @Override
   public String version() {
-    return "1.0";
+    return "1.1";
   }
 
   @Override
@@ -29,7 +29,7 @@ public class StellarSourceConnector extends SourceConnector {
 
   @Override
   public Class<? extends Task> taskClass() {
-    return StellarFlowSourceTask.class;
+    return StellarSourceTask.class;
   }
 
   @Override
@@ -43,8 +43,8 @@ public class StellarSourceConnector extends SourceConnector {
   @Override
   public ConfigDef config() {
     return new ConfigDef()
-        .define("stellar.horizon.url", Type.STRING, Importance.HIGH, "Stellar Horizon URL")
-        .define("stellar.account.id", Type.STRING, Importance.HIGH, "Stellar Account ID")
+        .define("stellar.horizon.url-format", Type.STRING, Importance.HIGH, "Stellar Horizon URL with account param")
+        .define("stellar.account-ids", Type.STRING, Importance.HIGH, "Stellar Account IDs being monitored")
         .define("stellar.transactions.topic", Type.STRING, Importance.HIGH, "Kafka Topic for transactions");
   }
 }
